@@ -21,15 +21,15 @@
   */
 
   module.exports =  Supra.Class.extend({
-   init: 	function(params){
+   init:  function(params){
 
-		//Parsing Init Params
-		this.Controller = params.ControllerName;
+    //Parsing Init Params
+    this.Controller = params.ControllerName;
 
-		//Other Attributions
-		this.autoRender = true;
-		this.sendValue = '';
-	},
+    //Other Attributions
+    this.autoRender = true;
+    this.sendValue = '';
+  },
 
 
 
@@ -38,28 +38,28 @@
    * @param  {[type]} params [description]
    * @return {[type]}        [description]
    */
-	loadDependencies : function(params){
+  loadDependencies : function(params){
 
-		this.req = params.req;
-		this.res = params.res;
-		this.data = params.POSTData;
-		this.Method = params.Method;
-		this.Params = params.Params;
-		this.verb = params.reqMethod.toLowerCase();
-		this.vars = []
+    this.req = params.req;
+    this.res = params.res;
+    this.data = params.POSTData;
+    this.Method = params.Method;
+    this.Params = params.Params;
+    this.verb = params.reqMethod.toLowerCase();
+    this.vars = []
 
-		var that = this
-		dependencies = new Supra.queue({
-			callback : function(){
-				this.execute.call(this)
-			}.bind(this)
-		})
-		dependencies.enqueue(function(){
-			that.defaultModel = that.Controller;
-			that.loadModel.call(that,that.Controller,'CALLED_BY_THE_DEPENDENCIES_LOADER')
-		})
-		dependencies.enqueue(function(){
-			if (that.verb === 'post'){
+    var that = this
+    dependencies = new Supra.queue({
+      callback : function(){
+        this.execute.call(this)
+      }.bind(this)
+    })
+    dependencies.enqueue(function(){
+      that.defaultModel = that.Controller;
+      that.loadModel.call(that,that.Controller,'CALLED_BY_THE_DEPENDENCIES_LOADER')
+    })
+    dependencies.enqueue(function(){
+      if (that.verb === 'post'){
         var body = '';
         that.req.on('data', function (data) {
           body += data;
@@ -75,17 +75,17 @@
       }
     })
 
-		if (that.uses){
-			if (that.uses.models){
-				that.uses.models.forEach(function(a){
-					dependencies.enqueue(function(){
-						that.loadModel.call(that,a,'CALLED_BY_THE_DEPENDENCIES_LOADER')
-					})
-				})
-			}
-		}
-		dependencies.run(that)
-	},
+    if (that.uses){
+      if (that.uses.models){
+        that.uses.models.forEach(function(a){
+          dependencies.enqueue(function(){
+            that.loadModel.call(that,a,'CALLED_BY_THE_DEPENDENCIES_LOADER')
+          })
+        })
+      }
+    }
+    dependencies.run(that)
+  },
 
 
 
@@ -94,9 +94,9 @@
    * @param {[type]} key   [description]
    * @param {[type]} value [description]
    */
-	set:function(key,value){
-		this.vars[key] = value;
-	},
+  set:function(key,value){
+    this.vars[key] = value;
+  },
 
 
 
@@ -106,12 +106,12 @@
    * @param  {[type]} preventClose [description]
    * @return {[type]}              [description]
    */
-	send : function(value,preventClose){
-		if (!preventClose)
-			// this.closeConnections()
-		if (value && !this.res.headersSent){
-			switch(typeof value){
-				case  'object' :
+  send : function(value,preventClose){
+    if (!preventClose)
+      // this.closeConnections()
+    if (value && !this.res.headersSent){
+      switch(typeof value){
+        case  'object' :
        var body = JSON.stringify(value)
        this.res.setHeader("Content-Type", "application/json");
        this.res.setHeader('Content-Length', body.length);
@@ -135,14 +135,14 @@
    * [closeConnections description]
    * @return {[type]} [description]
    */
-	closeConnections : function(){
-		var that = this
-		this.models.forEach(function(model){
-			if (that[model].con){
-				that[model].con.end()
-			}
-		})
-	},
+  closeConnections : function(){
+    var that = this
+    this.models.forEach(function(model){
+      if (that[model].con){
+        that[model].con.end()
+      }
+    })
+  },
 
 
 
@@ -151,20 +151,20 @@
    * @param  {[type]} view [description]
    * @return {[type]}      [description]
    */
-	render : function(view){
+  render : function(view){
 
-		var tmplFile;
-		var that = this;
-		if (view){
-			this.view = view;
-		}else{
-			this.view = this.Method;
-		}
+    var tmplFile;
+    var that = this;
+    if (view){
+      this.view = view;
+    }else{
+      this.view = this.Method;
+    }
 
-		if (this.template){
-			tmplFile = Supra.appDir+'/Templates/'+this.template+'.tmpl';
-		}else{
-			tmplFile = Supra.appDir+'/Templates/'+Supra.prefs.defaultTemplate+'.tmpl';
+    if (this.template){
+      tmplFile = Supra.appDir+'/Templates/'+this.template+'.tmpl';
+    }else{
+      tmplFile = Supra.appDir+'/Templates/'+Supra.prefs.defaultTemplate+'.tmpl';
     }
 
     viewFile = Supra.prefs.viewFolder+this.Controller.replace('Controller','')+'/'+this.view+'.view';
@@ -219,19 +219,19 @@
   execute : function(){
 
     if (!this[this.Method]){
-				//Controller Not Found
-				Supra.render({
-					errorView : true,
-					status : 404,
-					view : 'MethodNotFound',
-					res : this.res,
-					req : this.req,
-					vars : {
-						Method : this.Method,
-						Controller : this.Controller,
-						ControllerURL : this.Controller
-					}
-				})
+        //Controller Not Found
+        Supra.render({
+          errorView : true,
+          status : 404,
+          view : 'MethodNotFound',
+          res : this.res,
+          req : this.req,
+          vars : {
+            Method : this.Method,
+            Controller : this.Controller,
+            ControllerURL : this.Controller
+          }
+        })
       }else{
        if (this[this.Method][this.verb]){
         var action = this[this.Method][this.verb];
@@ -285,11 +285,20 @@
    */
   redirect:function(to){
     response.writeHead(302, {
-      'Location' : this.req.headers.host+'/'+to
+      'Location' : this.generateUrl(to)
     });
     res.end();
   },
 
+
+  /**
+   * [generateUrl description]
+   * @return {[type]} [description]
+   */
+  generateUrl: function(to){
+    console.log(this.req);
+    return this.req.headers.host+'/'+to;
+  },
 
 
 
